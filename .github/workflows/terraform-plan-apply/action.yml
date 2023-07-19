@@ -1,0 +1,42 @@
+name: 'Terraform Plan & Apply'
+description: 'Executes terraform plan and apply (optional)'
+author: 'Md Abrar'
+inputs:
+  working_directory:
+    description: ''
+    required: true
+    default: '.'
+  create_plan_comment:
+    description: ''
+    required: true
+    default: 'true'
+  addl_args:
+    description: 'Additional terraform plan or apply arguments'
+    required: false
+    default: ''
+  apply:
+    description: ''
+    required: true
+    default: 'false'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      id: tfsetup
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+
+    - name: Terraform Plan
+      id: tfplan
+      shell: bash
+      run: terraform plan -input=false ${{ inputs.addl_args }}
+      if: inputs.apply != 'true'
+      working-directory: ${{ inputs.working_directory }}
+
+    - name: Terraform Apply
+      id: tfapply
+      shell: bash
+      run: terraform apply -input=false -auto-approve ${{ inputs.addl_args }}
+      if: inputs.apply == 'true' && (github.event_name != 'pull_request')
+      working-directory: ${{ inputs.working_directory }}
