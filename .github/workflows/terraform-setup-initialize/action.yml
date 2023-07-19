@@ -1,0 +1,33 @@
+name: 'Terraform Setup & Initialize'
+description: 'Sets up, initializes, and validates terraform'
+author: 'Md Abrar'
+inputs:
+  working_directory:
+    description: ''
+    required: true
+    default: '.'
+  validate:
+    description: ''
+    required: true
+    default: 'true'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      id: tfsetup
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+
+    - name: Terraform Init
+      id: tfinit
+      shell: bash
+      run: terraform init
+      working-directory: ${{ inputs.working_directory }}
+
+    - name: Terraform Validate
+      id: tfvalidate
+      shell: bash
+      run: terraform validate
+      if: inputs.validate == 'true' && (github.ref != 'refs/heads/main' && (success() || failure()))
+      working-directory: ${{ inputs.working_directory }}
