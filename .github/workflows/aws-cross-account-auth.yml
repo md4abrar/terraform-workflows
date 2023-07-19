@@ -1,0 +1,36 @@
+name: 'AWS Cross Account Authentication'
+description: 'Authenticates via OIDC to an initial account (devops), then to a target account'
+author: 'Md Abrar'
+inputs:
+  initial_auth_role:
+    description: 'The ARN of the initial authentication role.'
+    required: true
+  initial_auth_region:
+    description: 'The AWS Region for initial authentication.'
+    required: true
+    default: 'us-west-2'
+  target_auth_role:
+    description: 'The ARN of the target authentication role.'
+    required: true
+  target_auth_region:
+    description: 'The AWS Region for target authentication.'
+    required: true
+    default: 'us-west-2'
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials (initial auth)
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ inputs.initial_auth_role }}
+        aws-region: ${{ inputs.initial_auth_region }}
+
+    - name: Configure AWS credentials (target auth)
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ inputs.target_auth_role }}
+        role-skip-session-tagging: true
+        aws-region: ${{ inputs.target_auth_region }}
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }} 
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }} 
+        aws-session-token: ${{ env.AWS_SESSION_TOKEN }} 
